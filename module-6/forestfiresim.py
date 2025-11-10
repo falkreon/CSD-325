@@ -4,7 +4,7 @@ Inspired by Nicky Case's Emoji Sim http://ncase.me/simulating/model/
 ** use spaces, not indentation to modify **
 Tags: short, bext, simulation"""
 
-import random, sys, time
+import random, sys, time, math
 
 try:
     import bext
@@ -20,6 +20,7 @@ HEIGHT = 22
 
 TREE = 'A'
 FIRE = '@'
+WATER = 'W'
 EMPTY = ' '
 
 # (!) Try changing these settings to anything between 0.0 and 1.0:
@@ -81,10 +82,27 @@ def isAdjacent(forest, x, y, cellType):
 
 def createNewForest():
     """Returns a dictionary for a new forest data structure."""
+
+    # Pick a lake center and radius. Numbers have been picked to place
+    # the lake "approximately in the center" each time.
+    lakeX = int( random.random() * 20 + 30 ) # random(30..50)
+    lakeY = int( random.random() *  3 + 10 ) # random(10..13)
+    lakeRadius = random.random() * 5 + 6     # random( 6..11)
+
     forest = {'width': WIDTH, 'height': HEIGHT}
     for x in range(WIDTH):
         for y in range(HEIGHT):
-            if (random.random() * 100) <= INITIAL_TREE_DENSITY:
+            # We're using the pythagorean theorem to find the distance of
+            # this cell from the center of the lake: a^2 + b^2 = c^2
+            # So sqrt(dx*dx + dy*dy) is the distance.
+            dxToLake = lakeX - x
+            dyToLake = lakeY - y
+            distanceToCenter = math.sqrt((dxToLake * dxToLake) + (dyToLake * dyToLake))
+
+            # So, with all the above, if we're "within the radius", we're a lake tile.
+            if distanceToCenter < lakeRadius:
+                forest[(x, y)] = WATER # Start as part of the lake
+            elif (random.random() * 100) <= INITIAL_TREE_DENSITY:
                 forest[(x, y)] = TREE  # Start as a tree.
             else:
                 forest[(x, y)] = EMPTY  # Start as an empty space.
@@ -102,7 +120,9 @@ def displayForest(forest):
             elif forest[(x, y)] == FIRE:
                 bext.fg('red')
                 print(FIRE, end='')
-          	
+            elif forest[(x, y)] == WATER:
+                bext.fg('blue')
+                print(WATER, end='')
             elif forest[(x, y)] == EMPTY:
                 print(EMPTY, end='')
         print()
