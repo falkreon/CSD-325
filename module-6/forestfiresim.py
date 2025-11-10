@@ -44,11 +44,6 @@ def main():
 
         for x in range(forest['width']):
             for y in range(forest['height']):
-                if (x, y) in nextForest:
-                    # If we've already set nextForest[(x, y)] on a
-                    # previous iteration, just do nothing here:
-                    continue
-
                 if ((forest[(x, y)] == EMPTY)
                     and (random.random() <= GROW_CHANCE)):
                     # Grow a tree in this empty space.
@@ -57,22 +52,31 @@ def main():
                     and (random.random() <= FIRE_CHANCE)):
                     # Lightning sets this tree on fire.
                     nextForest[(x, y)] = FIRE
+                elif ((forest[(x, y)] == TREE)
+                    and (isAdjacent(forest, x, y, FIRE))):
+                    # This tree was adjacent to a fire. Light it on fire too.
+                    nextForest[(x, y)] = FIRE
                 elif forest[(x, y)] == FIRE:
-                    # This tree is currently burning.
-                    # Loop through all the neighboring spaces:
-                    for ix in range(-1, 2):
-                        for iy in range(-1, 2):
-                            # Fire spreads to neighboring trees:
-                            if forest.get((x + ix, y + iy)) == TREE:
-                                nextForest[(x + ix, y + iy)] = FIRE
-                    # The tree has burned down now, so erase it:
+                    # This tree was burning last round. Put it out now.
                     nextForest[(x, y)] = EMPTY
+
+                    # We do not need to include water tiles here because
+                    # They will just copy over using the case below.
+
                 else:
                     # Just copy the existing object:
                     nextForest[(x, y)] = forest[(x, y)]
         forest = nextForest
 
         time.sleep(PAUSE_LENGTH)
+
+
+def isAdjacent(forest, x, y, cellType):
+    for ix in range(-1, 2):
+        for iy in range(-1, 2):
+            if forest.get((x + ix, y + iy)) == cellType:
+                return True
+    return False
 
 
 def createNewForest():
