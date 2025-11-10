@@ -1,3 +1,8 @@
+# CSD325: Advanced Python
+# Module 6.2: Forest Fire Simulation: Program and Revised Flowchart
+# Isaac Ellingson and Sara White
+# 11/10/2025
+
 """Forest Fire Sim, modified by Sue Sampson, based on a program by Al Sweigart
 A simulation of wildfires spreading in a forest. Press Ctrl-C to stop.
 Inspired by Nicky Case's Emoji Sim http://ncase.me/simulating/model/
@@ -95,6 +100,8 @@ def createNewForest():
             # We're using the pythagorean theorem to find the distance of
             # this cell from the center of the lake: a^2 + b^2 = c^2
             # So sqrt(dx*dx + dy*dy) is the distance.
+            # Note: negative numbers cancel out here in the multiplication,
+            # otherwise I'd want to take the abs of dxToLake and dyToLake.
             dxToLake = lakeX - x
             dyToLake = lakeY - y
             distanceToCenter = math.sqrt((dxToLake * dxToLake) + (dyToLake * dyToLake))
