@@ -1,15 +1,11 @@
-# CSD325: Advanced Python
-# Module 6.2: Forest Fire Simulation: Program and Revised Flowchart
-# Isaac Ellingson and Sara White
-# 11/10/2025
-
+ 
 """Forest Fire Sim, modified by Sue Sampson, based on a program by Al Sweigart
 A simulation of wildfires spreading in a forest. Press Ctrl-C to stop.
 Inspired by Nicky Case's Emoji Sim http://ncase.me/simulating/model/
 ** use spaces, not indentation to modify **
 Tags: short, bext, simulation"""
 
-import random, sys, time, math
+import random, sys, time
 
 try:
     import bext
@@ -23,10 +19,13 @@ except ImportError:
 WIDTH = 79
 HEIGHT = 22
 
+
+
 TREE = 'A'
 FIRE = '@'
-WATER = 'W'
 EMPTY = ' '
+#create LAKE variable
+LAKE = '~'
 
 # (!) Try changing these settings to anything between 0.0 and 1.0:
 INITIAL_TREE_DENSITY = 0.20  # Amount of forest that starts with trees.
@@ -50,6 +49,11 @@ def main():
 
         for x in range(forest['width']):
             for y in range(forest['height']):
+                if (x, y) in nextForest:
+                    # If we've already set nextForest[(x, y)] on a
+                    # previous iteration, just do nothing here:
+                    continue
+
                 if ((forest[(x, y)] == EMPTY)
                     and (random.random() <= GROW_CHANCE)):
                     # Grow a tree in this empty space.
@@ -58,17 +62,16 @@ def main():
                     and (random.random() <= FIRE_CHANCE)):
                     # Lightning sets this tree on fire.
                     nextForest[(x, y)] = FIRE
-                elif ((forest[(x, y)] == TREE)
-                    and (isAdjacent(forest, x, y, FIRE))):
-                    # This tree was adjacent to a fire. Light it on fire too.
-                    nextForest[(x, y)] = FIRE
                 elif forest[(x, y)] == FIRE:
-                    # This tree was burning last round. Put it out now.
+                    # This tree is currently burning.
+                    # Loop through all the neighboring spaces:
+                    for ix in range(-1, 2):
+                        for iy in range(-1, 2):
+                            # Fire spreads to neighboring trees:
+                            if forest.get((x + ix, y + iy)) == TREE:
+                                nextForest[(x + ix, y + iy)] = FIRE
+                    # The tree has burned down now, so erase it:
                     nextForest[(x, y)] = EMPTY
-
-                    # We do not need to include water tiles here because
-                    # They will just copy over using the case below.
-
                 else:
                     # Just copy the existing object:
                     nextForest[(x, y)] = forest[(x, y)]
@@ -77,43 +80,21 @@ def main():
         time.sleep(PAUSE_LENGTH)
 
 
-def isAdjacent(forest, x, y, cellType):
-    for ix in range(-1, 2):
-        for iy in range(-1, 2):
-            if forest.get((x + ix, y + iy)) == cellType:
-                return True
-    return False
-
-
 def createNewForest():
     """Returns a dictionary for a new forest data structure."""
-
-    # Pick a lake center and radius. Numbers have been picked to place
-    # the lake "approximately in the center" each time.
-    lakeX = int( random.random() * 20 + 30 ) # random(30..50)
-    lakeY = int( random.random() *  3 + 10 ) # random(10..13)
-    lakeRadius = random.random() * 5 + 6     # random( 6..11)
-
     forest = {'width': WIDTH, 'height': HEIGHT}
     for x in range(WIDTH):
         for y in range(HEIGHT):
-            # We're using the pythagorean theorem to find the distance of
-            # this cell from the center of the lake: a^2 + b^2 = c^2
-            # So sqrt(dx*dx + dy*dy) is the distance.
-            # Note: negative numbers cancel out here in the multiplication,
-            # otherwise I'd want to take the abs of dxToLake and dyToLake.
-            dxToLake = lakeX - x
-            dyToLake = lakeY - y
-            distanceToCenter = math.sqrt((dxToLake * dxToLake) + (dyToLake * dyToLake))
-
-            # So, with all the above, if we're "within the radius", we're a lake tile.
-            if distanceToCenter < lakeRadius:
-                forest[(x, y)] = WATER # Start as part of the lake
-            elif (random.random() * 100) <= INITIAL_TREE_DENSITY:
+            if (random.random() * 100) <= INITIAL_TREE_DENSITY:
                 forest[(x, y)] = TREE  # Start as a tree.
+            #define coordinate range for lake to occupy
+            elif 25 < x < 45 and 7 < y < 15:
+                forest[(x, y)] = LAKE
             else:
                 forest[(x, y)] = EMPTY  # Start as an empty space.
     return forest
+
+
 
 
 def displayForest(forest):
@@ -127,9 +108,10 @@ def displayForest(forest):
             elif forest[(x, y)] == FIRE:
                 bext.fg('red')
                 print(FIRE, end='')
-            elif forest[(x, y)] == WATER:
+            #set lake to display as blue
+            elif forest[(x, y)] == LAKE:
                 bext.fg('blue')
-                print(WATER, end='')
+                print(LAKE, end='')
             elif forest[(x, y)] == EMPTY:
                 print(EMPTY, end='')
         print()
