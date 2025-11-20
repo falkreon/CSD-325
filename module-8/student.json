@@ -22,5 +22,11 @@
         "L_Name": "Kane",
         "Student_ID": 68554,
         "Email": "tkane@gmail.com"
+    },
+    {
+        "L_Name": "Ellingson",
+        "F_Name": "Isaac",
+        "Student_ID": 70764,
+        "Email": "falkreon@example.com"
     }
 ]
