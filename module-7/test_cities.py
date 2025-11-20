@@ -5,4 +5,6 @@ class TestCityFunctions(unittest.TestCase):
     def test_two_args(self):
         self.assertEqual(city_name("Santiago", "Chile"), "Santiago, Chile")
 
-unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()
