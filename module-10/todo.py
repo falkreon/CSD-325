@@ -7,6 +7,9 @@
 import tkinter as tk
 import tkinter.messagebox as msg
 
+
+REMOVE_MOUSE_BUTTON = "<Button-3>"
+
 class Todo(tk.Tk):
     def __init__(self, tasks=None):
         super().__init__()
@@ -25,7 +28,7 @@ class Todo(tk.Tk):
 
         self.tasks_canvas.configure(yscrollcommand=self.scrollbar.set)
 
-        self.title("To-Do App v2")
+        self.title("Ellingson To-Do App")
         self.geometry("300x400")
 
         self.task_create = tk.Text(self.text_frame, height=3, bg="white", fg="black")
@@ -39,8 +42,14 @@ class Todo(tk.Tk):
         self.text_frame.pack(side=tk.BOTTOM, fill=tk.X)
         self.task_create.focus_set()
 
-        todo1 = tk.Label(self.tasks_frame, text="--- Add Items Here ---", bg="lightgrey", fg="black", pady=10)
-        todo1.bind("<Button-1>", self.remove_task)
+        todo1 = tk.Label(
+            self.tasks_frame,
+            text="--- Items Added --- ** Right Click Item to Delete **",
+            bg="lightgrey",
+            fg="black",
+            pady=10
+            )
+        todo1.bind(REMOVE_MOUSE_BUTTON, self.remove_task)
 
         self.tasks.append(todo1)
 
@@ -50,11 +59,21 @@ class Todo(tk.Tk):
         self.bind("<Return>", self.add_task)
         self.bind("<Configure>", self.on_frame_configure)
         self.bind_all("<MouseWheel>", self.mouse_scroll)
-        self.bind_all("<Button-4>", self.mouse_scroll)
-        self.bind_all("<Button-5>", self.mouse_scroll)
+
+        # This is no longer correct. Linux uses scrollwheel signals in modern times.
+        # self.bind_all("<Button-4>", self.mouse_scroll)
+        # self.bind_all("<Button-5>", self.mouse_scroll)
+
         self.tasks_canvas.bind("<Configure>", self.task_width)
 
-        self.colour_schemes = [{"bg": "lightgrey", "fg": "black"}, {"bg": "grey", "fg": "white"}]
+        self.colour_schemes = [{"bg": "#2E6171", "fg": "#FFFFFF"}, {"bg": "#D4AFCD", "fg": "#000000"}]
+
+        # This is an UNUSUAL amount of boilerplate required for the most common kinds of menus
+        menu_bar = tk.Menu(self)
+        self.config(menu = menu_bar)
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label = "File", menu = file_menu)
+        file_menu.add_command(label = "Exit", command = self.destroy)
 
     def add_task(self, event=None):
         task_text = self.task_create.get(1.0,tk.END).strip()
@@ -64,7 +83,7 @@ class Todo(tk.Tk):
 
             self.set_task_colour(len(self.tasks), new_task)
 
-            new_task.bind("<Button-1>", self.remove_task)
+            new_task.bind(REMOVE_MOUSE_BUTTON, self.remove_task)
             new_task.pack(side=tk.TOP, fill=tk.X)
 
             self.tasks.append(new_task)
